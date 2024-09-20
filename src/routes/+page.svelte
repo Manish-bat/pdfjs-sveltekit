@@ -3,60 +3,59 @@
   import { onMount } from 'svelte';
 
   let pdfViewer;
-  let pdfUrls = [
-    'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf',
-    'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/test/pdfs/TAMReview.pdf',
-    'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/test/pdfs/issue6946.pdf',
-  ];
-  let currentPage = 1;
+  let pdfUrl = 'https://raw.githubusercontent.com/mozilla/pdf.js/ba2edeae/web/compressed.tracemonkey-pldi-09.pdf';
   let isLoading = true;
 
-  onMount(() => {
+  onMount(async () => {
     console.log('Component mounted');
-    loadCurrentPdf();
+    await loadPdf();
   });
 
-  function loadCurrentPdf() {
-    console.log(`Loading PDF ${currentPage}`);
+  async function loadPdf() {
+    console.log('Loading PDF');
     isLoading = true;
-    fetch(pdfUrls[currentPage - 1])
-      .then(response => response.blob())
-      .then(blob => {
-        console.log('PDF blob fetched');
-        if (pdfViewer && pdfViewer.setPdfBlob) {
-          pdfViewer.setPdfBlob(blob);
-          console.log('PDF blob set to viewer');
-        } else {
-          console.error('pdfViewer or setPdfBlob not available');
-        }
-        isLoading = false;
-      })
-      .catch(error => {
-        console.error('Error fetching PDF:', error);
-        isLoading = false;
-      });
-  }
-
-  function nextPage() {
-    if (currentPage < pdfUrls.length) {
-      currentPage++;
-      loadCurrentPdf();
+    try {
+      const response = await fetch(pdfUrl);
+      const arrayBuffer = await response.arrayBuffer();
+      if (pdfViewer && pdfViewer.setPdfBinary) {
+        pdfViewer.setPdfBinary(arrayBuffer);
+        console.log('PDF binary data set to viewer');
+      } else {
+        console.error('pdfViewer or setPdfBinary not available');
+      }
+    } catch (error) {
+      console.error('Error fetching PDF:', error);
+    } finally {
+      isLoading = false;
     }
   }
 
-  function prevPage() {
-    if (currentPage > 1) {
-      currentPage--;
-      loadCurrentPdf();
+  async function downloadPdf() {
+    try {
+      const arrayBuffer = await pdfViewer.getPdfBinary();
+      const blob = new Blob([arrayBuffer], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'document.pdf';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
     }
   }
 </script>
 
 <main>
   <h1>PDF Viewer Demo</h1>
-  <p>Current Page: {currentPage}</p>
-  <p>Is Loading: {isLoading}</p>
-  <PdfViewer bind:this={pdfViewer} />
+  {#if isLoading}
+    <p>Loading PDF...</p>
+  {:else}
+    <PdfViewer bind:this={pdfViewer} />
+    <button on:click={downloadPdf}>Download PDF</button>
+  {/if}
 </main>
 
 <style>
@@ -67,7 +66,23 @@
   }
   h1 {
     color: #ff3e00;
+    text-transform: uppercase;
     font-size: 2em;
+    font-weight: 100;
     text-align: center;
+  }
+  button {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    font-size: 1em;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  button:hover {
+    background-color: #45a049;
   }
 </style>
