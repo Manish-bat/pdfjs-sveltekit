@@ -1,110 +1,55 @@
 <script>
   import { onMount } from 'svelte';
-  import 'pdfjs-dist/web/pdf_viewer.css';
 
   export let url = '';
-  let viewer;
-  let pdfDoc = null;
-  let pageNum = 1;
-  let pageCount = 0;
-  let pageRendering = false;
-  let pageNumPending = null;
-  let pdfjsLib;
+  let iframe;
+  let viewerLoaded = false;
 
-  onMount(async () => {
-    pdfjsLib = await import('pdfjs-dist/build/pdf');
-    pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-      'pdfjs-dist/build/pdf.worker.min.js',
-      import.meta.url
-    ).toString();
-
-    await loadPdf(url);
+  onMount(() => {
+    iframe.addEventListener('load', () => {
+      viewerLoaded = true;
+      console.log('PDF Viewer iframe loaded');
+    });
   });
 
-  async function loadPdf(pdfUrl) {
-    try {
-      pdfDoc = await pdfjsLib.getDocument(pdfUrl).promise;
-      pageCount = pdfDoc.numPages;
-      renderPage(pageNum);
-    } catch (error) {
-      console.error('Error loading PDF:', error);
-    }
-  }
-
-  async function renderPage(num) {
-    pageRendering = true;
-    const page = await pdfDoc.getPage(num);
-    const scale = 1.5;
-    const viewport = page.getViewport({ scale });
-
-    const canvas = viewer;
-    const context = canvas.getContext('2d');
-    canvas.height = viewport.height;
-    canvas.width = viewport.width;
-
-    const renderContext = {
-      canvasContext: context,
-      viewport: viewport
-    };
-
-    await page.render(renderContext).promise;
-    pageRendering = false;
-
-    if (pageNumPending !== null) {
-      renderPage(pageNumPending);
-      pageNumPending = null;
-    }
-  }
-
-  function queueRenderPage(num) {
-    if (pageRendering) {
-      pageNumPending = num;
-    } else {
-      renderPage(num);
-    }
-  }
-
-  function onPrevPage() {
-    if (pageNum <= 1) return;
-    pageNum--;
-    queueRenderPage(pageNum);
-  }
-
-  function onNextPage() {
-    if (pageNum >= pageCount) return;
-    pageNum++;
-    queueRenderPage(pageNum);
-  }
-
   export function setPdfBlob(blob) {
-    const url = URL.createObjectURL(blob);
-    loadPdf(url);
+    if (viewerLoaded) {
+      console.log('Setting PDF blob');
+      const reader = new FileReader();
+      reader.onload = function() {
+        const typedarray = new Uint8Array(this.result);
+        iframe.contentWindow.PDFViewerApplication.open(typedarray);
+      };
+      reader.readAsArrayBuffer(blob);
+    } else {
+      console.error('Viewer not loaded yet');
+    }
   }
 
   export function getPdfBlob() {
-    return fetch(url).then(response => response.blob());
+    return new Promise((resolve, reject) => {
+      if (viewerLoaded) {
+        iframe.contentWindow.PDFViewerApplication.pdfDocument.getData().then(data => {
+          resolve(new Blob([data], { type: 'application/pdf' }));
+        }).catch(reject);
+      } else {
+        reject(new Error('Viewer not loaded'));
+      }
+    });
   }
 </script>
 
-<div class="pdf-viewer">
-  <canvas bind:this={viewer}></canvas>
-  <div class="controls">
-    <button on:click={onPrevPage} disabled={pageNum <= 1}>Previous</button>
-    <span>{pageNum} / {pageCount}</span>
-    <button on:click={onNextPage} disabled={pageNum >= pageCount}>Next</button>
-  </div>
-</div>
+<iframe
+  bind:this={iframe}
+  src="/pdfjs-dist/web/viewer.html"
+  width="100%"
+  height="800px"
+  title="PDF Viewer"
+></iframe>
 
 <style>
-  .pdf-viewer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  canvas {
-    border: 1px solid #ccc;
-  }
-  .controls {
-    margin-top: 10px;
+  iframe {
+    border: none;
+    display: block;
   }
 </style>
