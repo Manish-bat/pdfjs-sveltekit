@@ -1,46 +1,71 @@
-# create-svelte
+# PDF.js Viewer Svelte Component
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/main/packages/create-svelte).
+A Svelte component that integrates Mozilla's PDF.js Viewer into SvelteKit applications, providing a powerful and flexible PDF viewing experience.
 
-## Creating a project
+## Features
 
-If you're seeing this, you've probably already done this step. Congrats!
+- Embed PDF.js Viewer in your SvelteKit application
+- Load PDFs from URL or binary data
+- Control PDF navigation programmatically
+- Download edited PDFs with form inputs and annotations
+- Cross-browser compatibility
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
+## Installation
 
-# create a new project in my-app
-npm create svelte@latest my-app
+1. Install the package:
+` ```npm install svelte-pdfjs-viewer```
+
+2. Copy the PDF.js files to your `static` folder:
+- Download PDF.js (version 4.0.379) from [here](https://github.com/mozilla/pdf.js/releases/tag/v4.0.379).
+- Extract the contents to `static/pdfjs-dist` in your SvelteKit project.
+
+## Basic Usage
+
+```svelte
+<script>
+import PdfViewer from 'svelte-pdfjs-viewer';
+
+let pdfViewer;
+let pdfUrl = 'path/to/your/pdf.pdf';
+</script>
+
+<PdfViewer 
+bind:this={pdfViewer}
+initialPdfUrl={pdfUrl}
+on:viewerReady={() => console.log('PDF Viewer is ready')}
+on:pdfLoaded={() => console.log('PDF loaded')}
+on:error={(e) => console.error(e.detail.message)}
+/>
 ```
 
-## Developing
+## **API Reference**
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+### **Props**
+- ``initialPdfUrl`` (string): Initial PDF URL to load
+  
+### **Methods**
+- ``setPdfBinary(arrayBuffer)``: Load a PDF from an ArrayBuffer
+- ``getPdfBinary()``: Get the current PDF as an ArrayBuffer
+- ``getCurrentPage()``: Get the current page number
+- ``setCurrentPage(pageNumber)``: Set the current page number
+  
+### **Events**
+- ``viewerReady``: Fired when the PDF.js viewer is loaded and ready
+- ``pdfLoaded``: Fired when a PDF is successfully loaded
+- ``error``: Fired when an error occurs, with the error message in event.detail.message
+- ``browserCompatibility``: Fired with browser compatibility information
+  
+## **Browser Compatibility**
+- Tested on Chrome, Firefox, Edge, and Safari.
 
-```bash
-npm run dev
+## **Contributing**
+- Contributions are welcome! Please feel free to submit a Pull Request.
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+## **License**
+- This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Building
+## **Acknowledgments**
+- PDF.js by Mozilla
 
-To create a production version of your app:
 
-```bash
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
-
-Screen shots:
-
-![alt text](image.png)
-
-![alt text](image-1.png)
-
-![alt text](image-2.png)
+This revised README provides a concise overview of your component, its features, installation instructions, basic usage, and API reference without delving into the specifics of your implementation. It's more appropriate for a component that others will use in their projects. You can expand on this as needed, adding any crucial information specific to your implementation.
