@@ -4,11 +4,11 @@ A Svelte component that integrates Mozilla's PDF.js Viewer into SvelteKit applic
 
 ## Features
 
-- Embed PDF.js Viewer in your SvelteKit application
-- Load PDFs from URL or binary data
-- Control PDF navigation programmatically
-- Download edited PDFs with form inputs and annotations
-- Cross-browser compatibility
+- 📄 Embed PDF.js Viewer in your SvelteKit application
+- 🔗 Load PDFs from URL or binary data
+- 🎮 Control PDF navigation programmatically
+- 💾 Download edited PDFs with form inputs and annotations
+- 🌐 Cross-browser compatibility
 
 ## Installation
 
@@ -38,33 +38,33 @@ on:error={(e) => console.error(e.detail.message)}
 />
 ```
 
-## **API Reference**
+📚 **API Reference**
 
-### **Props**
+🔧 **Props**
 - ``initialPdfUrl`` (string): Initial PDF URL to load
   
-### **Methods**
+🛠️ **Methods**
 - ``setPdfBinary(arrayBuffer)``: Load a PDF from an ArrayBuffer
 - ``getPdfBinary()``: Get the current PDF as an ArrayBuffer
 - ``getCurrentPage()``: Get the current page number
 - ``setCurrentPage(pageNumber)``: Set the current page number
   
-### **Events**
+🔔 **Events**
 - ``viewerReady``: Fired when the PDF.js viewer is loaded and ready
 - ``pdfLoaded``: Fired when a PDF is successfully loaded
 - ``error``: Fired when an error occurs, with the error message in event.detail.message
 - ``browserCompatibility``: Fired with browser compatibility information
   
-## **Browser Compatibility**
+🌐 **Browser Compatibility**
 - Tested on Chrome, Firefox, Edge, and Safari.
 
-## **Contributing**
+🤝 **Contributing**
 - Contributions are welcome! Please feel free to submit a Pull Request.
 
-## **License**
+📄 **License**
 - This project is licensed under the MIT License - see the LICENSE file for details.
 
-## **Acknowledgments**
+🙏 **Acknowledgments**
 - PDF.js by Mozilla
 
 
